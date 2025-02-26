@@ -5,6 +5,9 @@
         *ngIf="backButtonURL"
         [defaultHref]="backButtonURL"
       ></ion-back-button>
+      <ion-button *ngIf="isModal" (click)="dismissModal()">
+        <ion-icon slot="start" name="close-circle-outline"></ion-icon>
+      </ion-button>
     </ion-buttons>
     <ion-title>
       <strong>{{ title }}</strong>
