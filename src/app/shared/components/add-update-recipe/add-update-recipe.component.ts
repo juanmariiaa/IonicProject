@@ -9,75 +9,75 @@ import {
 } from '@angular/forms';
 import {
   IonContent,
-  IonButton,
   IonIcon,
-  IonAvatar,
+  IonHeader,
+  IonToolbar,
 } from '@ionic/angular/standalone';
-import { HeaderComponent } from '../../../shared/components/header/header.component';
-import { CustomInputComponent } from '../../../shared/components/custom-input/custom-input.component';
+import { HeaderComponent } from 'src/app/shared/components/header/header.component';
+import { CustomInputComponent } from 'src/app/shared/components/custom-input/custom-input.component';
+import { addIcons } from 'ionicons';
 import {
   lockClosedOutline,
   mailOutline,
-  bodyOutline,
+  personAddOutline,
   personOutline,
   alertCircleOutline,
   imageOutline,
   checkmarkCircleOutline,
 } from 'ionicons/icons';
-import { addIcons } from 'ionicons';
+import { IonButton, IonAvatar } from '@ionic/angular/standalone';
 import { FirebaseService } from 'src/app/services/firebase.service';
+import { SupabaseService } from 'src/app/services/supabase.service';
 import { User } from 'src/app/models/user.model';
 import { UtilsService } from 'src/app/services/utils.service';
-import { SupabaseService } from 'src/app/services/supabase.service';
-import { Miniature } from 'src/app/models/miniature.model';
+import { Recipe } from 'src/app/models/recipe.model';
 
 @Component({
-  selector: 'app-add-update-miniature',
-  templateUrl: './add-update-miniature.component.html',
-  styleUrls: ['./add-update-miniature.component.scss'],
+  selector: 'app-add-update-recipe',
+  templateUrl: './add-update-recipe.component.html',
+  styleUrls: ['./add-update-recipe.component.scss'],
   imports: [
-    IonAvatar,
     IonIcon,
-    IonButton,
+    HeaderComponent,
     IonContent,
     CommonModule,
     FormsModule,
-    HeaderComponent,
     CustomInputComponent,
     ReactiveFormsModule,
+    IonButton,
+    IonAvatar,
   ],
 })
 export class AddUpdateMiniatureComponent implements OnInit {
-  @Input() miniature: Miniature | null = null;
+  @Input() recipe: Recipe | null = null;
   firebaseService = inject(FirebaseService);
-  utilsService = inject(UtilsService);
   supabaseService = inject(SupabaseService);
-  user: User = {} as User;
+  utilsService = inject(UtilsService);
+
+  user = {} as User;
 
   form = new FormGroup({
     id: new FormControl(''),
-    name: new FormControl('', [Validators.required, Validators.minLength(4)]),
     image: new FormControl('', [Validators.required]),
-    units: new FormControl(1, [Validators.required, Validators.min(1)]),
-    strength: new FormControl(0, [Validators.required, Validators.min(0)]),
+    name: new FormControl('', [Validators.required, Validators.minLength(4)]),
+    calories: new FormControl(1, [Validators.required, Validators.min(1)]),
   });
 
   constructor() {
     addIcons({
       mailOutline,
       lockClosedOutline,
-      bodyOutline,
-      alertCircleOutline,
+      personAddOutline,
       personOutline,
+      alertCircleOutline,
       imageOutline,
       checkmarkCircleOutline,
     });
   }
-
   ngOnInit() {
-    this.user = this.utilsService.getLocalStorageUser();
-    if (this.miniature) {
-      this.form.setValue(this.miniature);
+    this.user = this.utilsService.getFromLocalStorage('user');
+    if (this.recipe) {
+      this.form.setValue(this.recipe);
     }
   }
 
@@ -91,10 +91,12 @@ export class AddUpdateMiniatureComponent implements OnInit {
   }
 
   async submit() {
-    if (this.miniature) {
-      this.updateMiniature();
-    } else {
-      this.createMiniature();
+    if (this.form.valid) {
+      if (this.recipe) {
+        this.UpdateMiniature();
+      } else {
+        this.createMiniature();
+      }
     }
   }
 
@@ -103,7 +105,6 @@ export class AddUpdateMiniatureComponent implements OnInit {
     await loading.present();
 
     const path: string = `users/${this.user.uid}/miniatures`;
-
     const imageDataUrl = this.form.value.image;
     const imagePath = `${this.user.uid}/${Date.now()}`;
     const imageUrl = await this.supabaseService.uploadImage(
@@ -115,21 +116,21 @@ export class AddUpdateMiniatureComponent implements OnInit {
 
     this.firebaseService
       .addDocument(path, this.form.value)
-      .then((res) => {
+      .then(async (res) => {
         this.utilsService.dismissModal({ success: true });
         this.utilsService.presentToast({
-          color: 'success',
+          message: 'Mininatura añadida exitosamente',
           duration: 1500,
-          message: 'Miniatura añadida exitosamente',
+          color: 'success',
           position: 'middle',
           icon: 'checkmark-circle-outline',
         });
       })
       .catch((error) => {
         this.utilsService.presentToast({
-          color: 'danger',
-          duration: 2500,
           message: error.message,
+          duration: 2500,
+          color: 'danger',
           position: 'middle',
           icon: 'alert-circle-outline',
         });
@@ -139,19 +140,20 @@ export class AddUpdateMiniatureComponent implements OnInit {
       });
   }
 
-  async updateMiniature() {
+  async UpdateMiniature() {
     const loading = await this.utilsService.loading();
     await loading.present();
 
-    const path: string = `users/${this.user.uid}/miniatures/${
-      this.miniature!.id
-    }`;
-
-    if (this.form.value.image != this.miniature!.image) {
+    const path: string = `users/${this.user.uid}/miniatures/${this.recipe!.id}`;
+    if (this.form.value.image != this.recipe!.image) {
       const imageDataUrl = this.form.value.image;
-      const imagePath = this.supabaseService.getFilePath(this.miniature!.image);
+      const oldImagePath = await this.firebaseService.getFilePath(
+        this.recipe!.image
+      );
+      await this.firebaseService.deleteFile(oldImagePath);
+      const imagePath = `${this.user.uid}/${Date.now()}`;
       const imageUrl = await this.supabaseService.uploadImage(
-        imagePath!,
+        imagePath,
         imageDataUrl!
       );
       this.form.controls.image.setValue(imageUrl);
@@ -160,21 +162,21 @@ export class AddUpdateMiniatureComponent implements OnInit {
 
     this.firebaseService
       .updateDocument(path, this.form.value)
-      .then((res) => {
+      .then(async (res) => {
         this.utilsService.dismissModal({ success: true });
         this.utilsService.presentToast({
-          color: 'success',
+          message: 'Mininatura editada exitosamente',
           duration: 1500,
-          message: 'Miniatura editada exitosamente',
+          color: 'success',
           position: 'middle',
           icon: 'checkmark-circle-outline',
         });
       })
       .catch((error) => {
         this.utilsService.presentToast({
-          color: 'danger',
-          duration: 2500,
           message: error.message,
+          duration: 2500,
+          color: 'danger',
           position: 'middle',
           icon: 'alert-circle-outline',
         });

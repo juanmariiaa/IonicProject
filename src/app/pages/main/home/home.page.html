@@ -1,61 +1,72 @@
 <app-header title="Inicio" [showMenuButton]="true"></app-header>
 
 <ion-content>
-
-<ion-refresher slot="fixed" (ionRefresh)="doRefresh($event)">
-  <ion-refresher-content></ion-refresher-content>
-</ion-refresher>
-<ion-card mode="ios" color="secondary" class="d-flex-center ion-text-center" *ngIf="!loading && miniatures.length">
-  <div><h5>{{miniatures.length}}</h5><p>Regimientos</p></div>
-  <div><h5>{{getTotalPower()}}</h5><p>Poder total</p></div>
-</ion-card>
+  <ion-refresher slot="fixed" (ionRefresh)="doRefresh($event)">
+    <ion-refresher-content></ion-refresher-content>
+  </ion-refresher>
+  <ion-card
+    mode="ios"
+    color="secondary"
+    class="d-flex-center ion-text-center"
+    *ngIf="!loading && miniatures.length"
+  >
+    <div>
+      <h5>{{miniatures.length}}</h5>
+      <p>Regimientos</p>
+    </div>
+  </ion-card>
   <ion-list *ngIf="!loading" class="miniatures-list">
-    <ion-item-sliding *ngFor="let miniature of miniatures" class="miniature-item">
+    <ion-item-sliding *ngFor="let recipe of miniatures" class="recipe-item">
       <ion-item>
         <ion-avatar slot="start">
-          <img [src]="miniature.image" />
+          <img [src]="recipe.image" />
         </ion-avatar>
         <ion-label>
-          <div class="name">{{miniature.name}}</div>
+          <div class="name">{{recipe.name}}</div>
           <div class="data">
-            <strong>Unidades:</strong> {{miniature.units}}
+            <strong>Unidades:</strong> {{recipe.calories}}
             <br />
-            <strong>Fuerza:</strong> {{miniature.strength}}
           </div>
-          <ion-chip color="primary" mode="ios" outline="true">
-            <ion-label>Poder: {{miniature.units * miniature.strength}}</ion-label>
-          </ion-chip>
+          <ion-chip color="primary" mode="ios" outline="true"> </ion-chip>
         </ion-label>
       </ion-item>
       <ion-item-options>
-        <ion-item-option (click)="addUpdateMiniature(miniature)">
+        <ion-item-option (click)="addUpdateMiniature(recipe)">
           <ion-icon class="option-btn" name="create-outline"></ion-icon>
         </ion-item-option>
-        <ion-item-option (click)="confirmDeleteMiniature(miniature)" color="danger">
+        <ion-item-option
+          (click)="confirmDeleteMiniature(recipe)"
+          color="danger"
+        >
           <ion-icon class="option-btn" name="trash-outline"></ion-icon>
         </ion-item-option>
       </ion-item-options>
     </ion-item-sliding>
   </ion-list>
 
-
-    <ion-list *ngIf="loading"  class="miniatures-list">
-    <ion-item *ngFor="let i of [1, 1, 1, 1, 1, 1, 1, 1]" class="miniature-item">
-        <ion-avatar slot="start">
-          <ion-skeleton-text animated style="width: 100%; height: 100%"></ion-skeleton-text>
-        </ion-avatar>
-        <ion-label style="width: 50%">
-          <div><ion-skeleton-text animated style="width: 50%"></ion-skeleton-text></div>
-          <div><ion-skeleton-text animated style="width: 30%"></ion-skeleton-text></div>
-        </ion-label>
-      </ion-item>
+  <ion-list *ngIf="loading" class="miniatures-list">
+    <ion-item *ngFor="let i of [1, 1, 1, 1, 1, 1, 1, 1]" class="recipe-item">
+      <ion-avatar slot="start">
+        <ion-skeleton-text
+          animated
+          style="width: 100%; height: 100%"
+        ></ion-skeleton-text>
+      </ion-avatar>
+      <ion-label style="width: 50%">
+        <div>
+          <ion-skeleton-text animated style="width: 50%"></ion-skeleton-text>
+        </div>
+        <div>
+          <ion-skeleton-text animated style="width: 30%"></ion-skeleton-text>
+        </div>
+      </ion-label>
+    </ion-item>
   </ion-list>
 
   <div *ngIf="!loading && this.miniatures.length == 0" class="empty">
     <ion-icon name="body-outline"></ion-icon>
     <h3>Aún no has agregado ninguna miniatura</h3>
   </div>
-
 
   <ion-fab vertical="bottom" horizontal="end" slot="fixed">
     <ion-fab-button (click)="addUpdateMiniature()">

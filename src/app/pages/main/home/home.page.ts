@@ -25,8 +25,8 @@ import { FirebaseService } from 'src/app/services/firebase.service';
 import { HeaderComponent } from '../../../shared/components/header/header.component';
 import { addIcons } from 'ionicons';
 import { add, createOutline, trashOutline, bodyOutline } from 'ionicons/icons';
-import { AddUpdateMiniatureComponent } from 'src/app/shared/components/add-update-miniature/add-update-miniature.component';
-import { Miniature } from 'src/app/models/miniature.model';
+import { AddUpdateMiniatureComponent } from 'src/app/shared/components/add-update-recipe/add-update-recipe.component';
+import { Recipe } from 'src/app/models/recipe.model';
 import { User } from 'src/app/models/user.model';
 import { SupabaseService } from 'src/app/services/supabase.service';
 import { QueryOptions } from '../../../services/query-options.interface';
@@ -63,7 +63,7 @@ export class HomePage implements OnInit {
   utilsService = inject(UtilsService);
   firebaseService = inject(FirebaseService);
   supabaseService = inject(SupabaseService);
-  miniatures: Miniature[] = [];
+  miniatures: Recipe[] = [];
   loading: boolean = false;
   constructor() {
     addIcons({ createOutline, trashOutline, bodyOutline, add });
@@ -109,11 +109,11 @@ export class HomePage implements OnInit {
     });
   }
 
-  async addUpdateMiniature(miniature?: Miniature) {
+  async addUpdateMiniature(recipe?: Recipe) {
     let success = await this.utilsService.presentModal({
       component: AddUpdateMiniatureComponent,
       cssClass: 'add-update-modal',
-      componentProps: { miniature },
+      componentProps: { recipe },
     });
     if (success) {
       this.getMiniatures();
@@ -124,7 +124,7 @@ export class HomePage implements OnInit {
     this.getMiniatures();
   }
 
-  confirmDeleteMiniature(miniature: Miniature) {
+  confirmDeleteMiniature(recipe: Recipe) {
     this.utilsService.presentAlert({
       header: 'Eliminar miniatura',
       message: '¿Está seguro de que desea eliminar la miniatura?',
@@ -135,29 +135,29 @@ export class HomePage implements OnInit {
         {
           text: 'Sí',
           handler: () => {
-            this.deleteMiniature(miniature);
+            this.deleteMiniature(recipe);
           },
         },
       ],
     });
   }
 
-  async deleteMiniature(miniature: Miniature) {
+  async deleteMiniature(recipe: Recipe) {
     const loading = await this.utilsService.loading();
     await loading.present();
 
     const user: User = this.utilsService.getLocalStorageUser();
 
-    const path: string = `users/${user.uid}/miniatures/${miniature.id}`;
+    const path: string = `users/${user.uid}/miniatures/${recipe.id}`;
 
-    const imagePath = this.supabaseService.getFilePath(miniature.image);
+    const imagePath = this.supabaseService.getFilePath(recipe.image);
     await this.supabaseService.deleteFile(imagePath!);
 
     this.firebaseService
       .deleteDocument(path)
       .then((res) => {
         this.miniatures = this.miniatures.filter(
-          (listedMiniature) => listedMiniature.id !== miniature.id
+          (listedMiniature) => listedMiniature.id !== recipe.id
         );
         this.utilsService.presentToast({
           color: 'success',
@@ -185,11 +185,5 @@ export class HomePage implements OnInit {
       this.getMiniatures();
       event.target.complete();
     }, 2000);
-  }
-  getTotalPower() {
-    return this.miniatures.reduce(
-      (total, miniature) => total + miniature.strength * miniature.units,
-      0
-    );
   }
 }
