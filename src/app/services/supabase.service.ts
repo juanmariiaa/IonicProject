@@ -10,15 +10,14 @@ export class SupabaseService {
 
   constructor() {
     this.supabase = createClient(
-      environment.supabaseConfig.projectURl,
+      environment.supabaseConfig.projectURL,
       environment.supabaseConfig.apiKey
     );
   }
-
   async uploadImage(path: string, imageUrl: string) {
     const blob = this.dataUrlToBlob(imageUrl!);
-    const file = new File([blob], path.split('/')[1], {
-      type: blob.type,
+    const file = new File([blob], path.split('/')[1] + `.png`, {
+      type: 'image/png',
     });
 
     const uploadResult = await this.supabase.storage
@@ -72,22 +71,16 @@ export class SupabaseService {
       return null;
     }
   }
-
   async deleteFile(filePath: string): Promise<boolean> {
     try {
       const { error } = await this.supabase.storage
         .from(environment.supabaseConfig.bucket)
         .remove([filePath]);
-
       if (error) {
-        console.error('Error al eliminar el archivo:', error);
         return false;
       }
-
-      console.log(`Archivo eliminado: ${filePath}`);
       return true;
     } catch (error) {
-      console.error('Error inesperado al intentar eliminar el archivo:', error);
       return false;
     }
   }

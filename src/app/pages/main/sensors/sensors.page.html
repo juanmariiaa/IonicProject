@@ -1,0 +1,14 @@
+<app-header [showMenuButton]="true" title="Sensores"></app-header>
+
+<ion-content class="ion-padding">
+<ion-card>
+  <ion-card-header>
+    <ion-card-title>GPS</ion-card-title>
+  </ion-card-header>
+  <ion-card-content>
+    <p>Latitud: {{position?.coords?.latitude}}</p>
+    <p>Longitud: {{position?.coords?.longitude}}</p>
+    <p>Precisión: {{position?.coords?.accuracy}}</p>
+  </ion-card-content>
+</ion-card>
+</ion-content>

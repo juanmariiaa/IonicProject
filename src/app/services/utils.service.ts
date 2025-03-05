@@ -1,16 +1,15 @@
 import { inject, Injectable } from '@angular/core';
-import { Router } from '@angular/router';
+import { Router, UrlTree } from '@angular/router';
 import {
-  LoadingController,
   ToastController,
   ToastOptions,
   ModalController,
   ModalOptions,
   AlertController,
   AlertOptions,
+  LoadingController,
 } from '@ionic/angular/standalone';
 import { Camera, CameraResultType, CameraSource } from '@capacitor/camera';
-import { User } from '../models/user.model';
 
 @Injectable({
   providedIn: 'root',
@@ -18,9 +17,9 @@ import { User } from '../models/user.model';
 export class UtilsService {
   loadingController = inject(LoadingController);
   toastController = inject(ToastController);
-  router = inject(Router);
   modalController = inject(ModalController);
   alertController = inject(AlertController);
+  router = inject(Router);
 
   loading() {
     return this.loadingController.create({ spinner: 'crescent' });
@@ -31,12 +30,12 @@ export class UtilsService {
     toast.present();
   }
 
-  urlTree(url: string) {
-    return this.router.parseUrl(url);
-  }
-
   routerLink(url: string) {
     return this.router.navigateByUrl(url);
+  }
+
+  urlTree(url: string): UrlTree {
+    return this.router.parseUrl(url);
   }
 
   saveInLocalStorage(key: string, value: any) {
@@ -44,8 +43,8 @@ export class UtilsService {
   }
 
   getFromLocalStorage(key: string) {
-    const value = localStorage.getItem(key);
-    return value ? JSON.parse(value) : value;
+    const valueString = localStorage.getItem(key);
+    return valueString ? JSON.parse(valueString) : valueString;
   }
 
   async presentModal(modalOptions: ModalOptions) {
@@ -69,16 +68,15 @@ export class UtilsService {
       resultType: CameraResultType.DataUrl,
       source: CameraSource.Prompt,
       promptLabelHeader,
-      promptLabelPhoto: 'Selecciona una imagen',
+      promptLabelPhoto: 'Seleccione una imagen',
       promptLabelPicture: 'Saca una foto',
     });
   }
-
-  getLocalStoredUser(): User | null {
+  getLocalStorageUser() {
     return this.getFromLocalStorage('user');
   }
 
-  async presentAlert(alertOptions?: AlertOptions) {
+  async presentAlert(alertOptions?: AlertOptions | undefined) {
     const alert = await this.alertController.create(alertOptions);
 
     await alert.present();
