@@ -1,4 +1,4 @@
-<app-header title="Inicio"></app-header>
+<app-header [showMenuButton]="true" title="Inicio"></app-header>
 
 <ion-content>
   <ion-refresher slot="fixed" (ionRefresh)="doRefresh($event)">
@@ -19,7 +19,7 @@
       <p>Poder total</p>
     </div>
   </ion-card>
-  <ion-list *ngIf="!loading" class="miniatures-list">
+  <ion-list *ngIf="!loading">
     <ion-item-sliding
       *ngFor="let miniature of miniatures"
       class="miniature-item"
@@ -53,7 +53,7 @@
     </ion-item-sliding>
   </ion-list>
 
-  <ion-list *ngIf="loading" class="miniatures-list">
+  <ion-list *ngIf="loading">
     <ion-item *ngFor="let i of [1,1,1,1,1,1,1,1]" class="miniature-item">
       <ion-avatar slot="start">
         <ion-skeleton-text
