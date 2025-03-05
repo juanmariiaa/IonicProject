@@ -20,6 +20,7 @@ import {
   personOutline,
   logOutOutline,
   personCircleOutline,
+  hardwareChipOutline,
 } from 'ionicons/icons';
 import { Router, RouterLink, RouterLinkActive } from '@angular/router';
 import { HeaderComponent } from '../../shared/components/header/header.component';
@@ -64,6 +65,11 @@ export class MainPage implements OnInit {
       url: '/main/profile',
       icon: 'person-outline',
     },
+    {
+      title: 'Sensores',
+      url: '/main/sensors',
+      icon: 'hardware-chip-outline',
+    },
   ];
 
   user: User;
@@ -74,8 +80,9 @@ export class MainPage implements OnInit {
       logOutOutline,
       personOutline,
       homeOutline,
+      hardwareChipOutline,
     });
-    this.user = this.utilsService.getLocalStoredUser()!;
+    this.user = this.utilsService.getLocalStorageUser()!;
   }
 
   ngOnInit() {}

@@ -5,7 +5,6 @@ import { IonText } from '@ionic/angular/standalone';
   selector: 'app-logo',
   templateUrl: './logo.component.html',
   styleUrls: ['./logo.component.scss'],
-  standalone: true,
   imports: [IonText],
 })
 export class LogoComponent implements OnInit {

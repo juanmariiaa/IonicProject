@@ -15,17 +15,17 @@ export const routes: Routes = [
     canActivate: [noAuthGuard],
   },
   {
-    path: 'sign-up',
-    loadComponent: () =>
-      import('./pages/auth/sign-up/sign-up.page').then((m) => m.SignUpPage),
-    canActivate: [noAuthGuard],
-  },
-  {
     path: 'forgot-password',
     loadComponent: () =>
       import('./pages/auth/forgot-password/forgot-password.page').then(
         (m) => m.ForgotPasswordPage
       ),
+    canActivate: [noAuthGuard],
+  },
+  {
+    path: 'sign-up',
+    loadComponent: () =>
+      import('./pages/auth/sign-up/sign-up.page').then((m) => m.SignUpPage),
     canActivate: [noAuthGuard],
   },
   {
@@ -44,6 +44,13 @@ export const routes: Routes = [
         loadComponent: () =>
           import('./pages/main/profile/profile.page').then(
             (m) => m.ProfilePage
+          ),
+      },
+      {
+        path: 'sensors',
+        loadComponent: () =>
+          import('./pages/main/sensors/sensors.page').then(
+            (m) => m.SensorsPage
           ),
       },
     ],

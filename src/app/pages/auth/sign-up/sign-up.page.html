@@ -1,4 +1,5 @@
 <app-header title="Registro" backButtonURL="/auth"></app-header>
+
 <ion-content>
   <div class="d-flex-center">
     <form [formGroup]="form" class="signup-form" (ngSubmit)="submit()">
@@ -20,7 +21,7 @@
           Debe especificar un nombre
         </div>
         <div *ngIf="form.controls.name.errors?.['minlength']">
-          El nombre debe tener al menos 4 caracteres
+          El nombre debe tener al menos 4 caracteres.
         </div>
       </div>
 
@@ -45,9 +46,9 @@
       </div>
 
       <app-custom-input
+        icon="lock-closed-outline"
         [control]="form.controls.password"
         type="password"
-        icon="lock-closed-outline"
         label="Contraseña"
       ></app-custom-input>
 
@@ -59,6 +60,10 @@
           Debe especificar una contraseña
         </div>
       </div>
+
+      <p class="ion-text-end" routerLink="/forgot-password">
+        Olvidé mi contraseña
+      </p>
 
       <ion-button
         mode="ios"

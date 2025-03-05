@@ -1,14 +1,14 @@
 import { CommonModule } from '@angular/common';
 import { Component, inject, Input, OnInit } from '@angular/core';
 import {
+  IonMenuButton,
   IonHeader,
   IonToolbar,
   IonTitle,
   IonButtons,
   IonBackButton,
-  IonButton,
   IonIcon,
-  IonMenuButton,
+  IonButton,
 } from '@ionic/angular/standalone';
 import { addIcons } from 'ionicons';
 import { closeCircleOutline } from 'ionicons/icons';
@@ -18,17 +18,16 @@ import { UtilsService } from 'src/app/services/utils.service';
   selector: 'app-header',
   templateUrl: './header.component.html',
   styleUrls: ['./header.component.scss'],
-  standalone: true,
   imports: [
+    IonMenuButton,
+    IonHeader,
+    IonToolbar,
+    IonTitle,
+    IonButtons,
+    IonBackButton,
+    CommonModule,
     IonIcon,
     IonButton,
-    IonBackButton,
-    IonButtons,
-    IonTitle,
-    IonToolbar,
-    IonHeader,
-    CommonModule,
-    IonMenuButton,
   ],
 })
 export class HeaderComponent implements OnInit {
@@ -36,9 +35,7 @@ export class HeaderComponent implements OnInit {
   @Input() backButtonURL: string | null = null;
   @Input() isModal: boolean = false;
   @Input() showMenuButton: boolean = false;
-
   utilsService = inject(UtilsService);
-
   constructor() {
     addIcons({ closeCircleOutline });
   }

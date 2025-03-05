@@ -1,35 +1,31 @@
-import { Injectable, inject } from '@angular/core';
+import { Directive, inject, Injectable } from '@angular/core';
 import {
   Auth,
   createUserWithEmailAndPassword,
+  sendPasswordResetEmail,
   signInWithEmailAndPassword,
   updateProfile,
   UserCredential,
-  sendPasswordResetEmail,
 } from '@angular/fire/auth';
-import {
-  Storage,
-  uploadString,
-  ref,
-  getDownloadURL,
-  deleteObject,
-} from '@angular/fire/storage';
 import { User } from '../models/user.model';
 import {
-  Firestore,
-  setDoc,
   doc,
+  Firestore,
   getDoc,
+  setDoc,
   addDoc,
-  updateDoc,
   collection,
   collectionData,
   query,
+  updateDoc,
   deleteDoc,
   QueryConstraint,
   orderBy,
   limit,
 } from '@angular/fire/firestore';
+import { UnsubscriptionError } from 'rxjs';
+import { deleteObject, uploadString } from '@firebase/storage';
+import { getDownloadURL, ref, Storage } from '@angular/fire/storage';
 import { QueryOptions } from './query-options.interface';
 
 @Injectable({
@@ -40,12 +36,20 @@ export class FirebaseService {
   firestore = inject(Firestore);
   storage = inject(Storage);
 
+  constructor() {}
+
   signIn(user: User): Promise<UserCredential> {
     return signInWithEmailAndPassword(this.auth, user.email, user.password);
   }
 
   signUp(user: User): Promise<UserCredential> {
     return createUserWithEmailAndPassword(this.auth, user.email, user.password);
+  }
+
+  async signOut() {
+    await this.auth.signOut();
+    localStorage.removeItem('user');
+    window.location.reload();
   }
 
   async updateUser(displayName: string) {
@@ -56,14 +60,50 @@ export class FirebaseService {
     }
   }
 
-  sendRecoveryEmail(email: string) {
-    return sendPasswordResetEmail(this.auth, email);
+  setDocument(path: string, data: any) {
+    return setDoc(doc(this.firestore, path), data);
   }
 
-  async signOut() {
-    await this.auth.signOut();
-    localStorage.removeItem('user');
-    window.location.reload();
+  addDocument(path: string, data: any) {
+    return addDoc(collection(this.firestore, path), data);
+  }
+
+  updateDocument(path: string, data: any) {
+    return updateDoc(doc(this.firestore, path), data);
+  }
+
+  deleteDocument(path: string) {
+    return deleteDoc(doc(this.firestore, path));
+  }
+
+  async getDocument(path: string) {
+    const docSnap = await getDoc(doc(this.firestore, path));
+    return docSnap.data();
+  }
+
+  buildQueryConstraints(options?: QueryOptions): QueryConstraint[] {
+    const constraints: QueryConstraint[] = [];
+    if (options?.orderBy) {
+      constraints.push(
+        orderBy(options?.orderBy.field, options?.orderBy.direction)
+      );
+    }
+
+    if (options?.limit) {
+      constraints.push(limit(options?.limit));
+    }
+
+    return constraints;
+  }
+
+  async getCollectionData(path: string, collectionQuery?: QueryOptions) {
+    const ref = collection(this.firestore, path);
+    const constraints = this.buildQueryConstraints(collectionQuery);
+    return collectionData(query(ref, ...constraints), { idField: 'id' });
+  }
+
+  sendRecoveryEmail(email: string) {
+    return sendPasswordResetEmail(this.auth, email);
   }
 
   async isAuthenticated() {
@@ -80,53 +120,8 @@ export class FirebaseService {
     return userExists;
   }
 
-  async getDocument(path: string) {
-    const docSnap = await getDoc(doc(this.firestore, path));
-    return docSnap.data();
-  }
-
-  setDocument(path: string, data: any) {
-    return setDoc(doc(this.firestore, path), data);
-  }
-
-  updateDocument(path: string, data: any) {
-    return updateDoc(doc(this.firestore, path), data);
-  }
-
-  deleteDocument(path: string) {
-    return deleteDoc(doc(this.firestore, path));
-  }
-
-  addDocument(path: string, data: any) {
-    return addDoc(collection(this.firestore, path), data);
-  }
-
-  buildQueryConstraints(options?: QueryOptions): QueryConstraint[] {
-    const queryConstraints: QueryConstraint[] = [];
-
-    // Manejo del orden (orderBy)
-    if (options?.orderBy) {
-      queryConstraints.push(
-        orderBy(options.orderBy.field, options.orderBy.direction)
-      );
-    }
-
-    // Manejo de la cantidad límite (limit)
-    if (options?.limit) {
-      queryConstraints.push(limit(options.limit));
-    }
-
-    return queryConstraints;
-  }
-
-  getCollectionData(path: string, options?: QueryOptions) {
-    const ref = collection(this.firestore, path);
-    const collectionQuery = this.buildQueryConstraints(options);
-    return collectionData(query(ref, ...collectionQuery), { idField: 'id' });
-  }
-
-  async uploadImage(path: string, imageUrl: string) {
-    return uploadString(ref(this.storage, path), imageUrl, 'data_url').then(
+  async uploadImage(path: string, imageDataUrl: string) {
+    return uploadString(ref(this.storage, path), imageDataUrl, 'data_url').then(
       () => {
         return getDownloadURL(ref(this.storage, path));
       }
@@ -134,11 +129,7 @@ export class FirebaseService {
   }
 
   async getFilePath(url: string) {
-    //return ref(this.storage, url).fullPath
-    const path = await new Promise((resolve) => {
-      resolve('');
-    });
-    return path as string;
+    return ref(this.storage, url).fullPath;
   }
 
   async deleteFile(path: string) {

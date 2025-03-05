@@ -7,22 +7,16 @@ import {
   ReactiveFormsModule,
   Validators,
 } from '@angular/forms';
-import {
-  IonContent,
-  IonIcon,
-  IonHeader,
-  IonToolbar,
-} from '@ionic/angular/standalone';
+import { IonContent, IonButton, IonIcon } from '@ionic/angular/standalone';
 import { HeaderComponent } from 'src/app/shared/components/header/header.component';
 import { CustomInputComponent } from 'src/app/shared/components/custom-input/custom-input.component';
-import { addIcons } from 'ionicons';
 import {
   mailOutline,
   alertCircleOutline,
-  mailUnreadOutline,
   sendOutline,
+  mailUnreadOutline,
 } from 'ionicons/icons';
-import { IonButton } from '@ionic/angular/standalone';
+import { addIcons } from 'ionicons';
 import { LogoComponent } from 'src/app/shared/components/logo/logo.component';
 import { FirebaseService } from 'src/app/services/firebase.service';
 import { UtilsService } from 'src/app/services/utils.service';
@@ -33,33 +27,31 @@ import { UtilsService } from 'src/app/services/utils.service';
   styleUrls: ['./forgot-password.page.scss'],
   standalone: true,
   imports: [
-    IonToolbar,
-    IonHeader,
     IonIcon,
-    HeaderComponent,
+    IonButton,
     IonContent,
     CommonModule,
     FormsModule,
+    HeaderComponent,
     CustomInputComponent,
     ReactiveFormsModule,
-    IonButton,
     LogoComponent,
   ],
 })
 export class ForgotPasswordPage implements OnInit {
+  firebaseService = inject(FirebaseService);
+  utilsService = inject(UtilsService);
+
   form = new FormGroup({
     email: new FormControl('', [Validators.required, Validators.email]),
   });
 
-  firebaseService = inject(FirebaseService);
-  utilsService = inject(UtilsService);
-
   constructor() {
     addIcons({
+      sendOutline,
       mailOutline,
       alertCircleOutline,
       mailUnreadOutline,
-      sendOutline,
     });
   }
 
@@ -72,20 +64,18 @@ export class ForgotPasswordPage implements OnInit {
       .sendRecoveryEmail(this.form.value.email!)
       .then((res) => {
         this.utilsService.presentToast({
-          message: 'Correo enviado en caso de existir la cuenta',
-          duration: 1500,
           color: 'primary',
+          duration: 1500,
+          message: 'Correo enviado en caso de existir la cuenta',
           position: 'middle',
           icon: 'mail-unread-outline',
         });
-        this.form.reset();
-        this.utilsService.routerLink('/auth');
       })
       .catch((error) => {
         this.utilsService.presentToast({
-          message: error.message,
-          duration: 2500,
           color: 'danger',
+          duration: 2500,
+          message: error.message,
           position: 'middle',
           icon: 'alert-circle-outline',
         });

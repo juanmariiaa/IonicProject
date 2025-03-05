@@ -2,9 +2,9 @@ import { CommonModule } from '@angular/common';
 import { Component, Input, OnInit } from '@angular/core';
 import { FormControl, ReactiveFormsModule } from '@angular/forms';
 import {
-  IonInput,
   IonItem,
   IonIcon,
+  IonInput,
   IonButton,
 } from '@ionic/angular/standalone';
 import { addIcons } from 'ionicons';
@@ -14,14 +14,13 @@ import { eyeOutline, eyeOffOutline } from 'ionicons/icons';
   selector: 'app-custom-input',
   templateUrl: './custom-input.component.html',
   styleUrls: ['./custom-input.component.scss'],
-  standalone: true,
   imports: [
-    IonButton,
+    IonItem,
     IonIcon,
     IonInput,
-    IonItem,
-    CommonModule,
     ReactiveFormsModule,
+    CommonModule,
+    IonButton,
   ],
 })
 export class CustomInputComponent implements OnInit {
@@ -35,7 +34,7 @@ export class CustomInputComponent implements OnInit {
   hide: boolean = true;
 
   constructor() {
-    addIcons({ eyeOutline, eyeOffOutline });
+    addIcons({ eyeOffOutline, eyeOutline });
   }
 
   ngOnInit() {

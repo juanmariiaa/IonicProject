@@ -1,9 +1,9 @@
 <app-header title="Login"></app-header>
+
 <ion-content>
   <div class="d-flex-center">
     <form [formGroup]="form" class="auth-form" (ngSubmit)="submit()">
       <app-logo></app-logo>
-
       <app-custom-input
         icon="mail-outline"
         autocomplete="email"
@@ -25,9 +25,9 @@
       </div>
 
       <app-custom-input
+        icon="lock-closed-outline"
         [control]="form.controls.password"
         type="password"
-        icon="lock-closed-outline"
         label="Contraseña"
       ></app-custom-input>
 
@@ -56,10 +56,10 @@
       </ion-button>
 
       <ion-button
-        routerLink="/sign-up"
-        class="ion-margin-top"
         mode="ios"
+        routerLink="/sign-up"
         expand="block"
+        class="ion-margin-top"
         fill="outline"
       >
         Crear usuario

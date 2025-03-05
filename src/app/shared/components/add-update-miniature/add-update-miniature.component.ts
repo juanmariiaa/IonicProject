@@ -9,26 +9,26 @@ import {
 } from '@angular/forms';
 import {
   IonContent,
+  IonButton,
   IonIcon,
-  IonHeader,
-  IonToolbar,
+  IonAvatar,
 } from '@ionic/angular/standalone';
-import { HeaderComponent } from 'src/app/shared/components/header/header.component';
-import { CustomInputComponent } from 'src/app/shared/components/custom-input/custom-input.component';
-import { addIcons } from 'ionicons';
+import { HeaderComponent } from '../../../shared/components/header/header.component';
+import { CustomInputComponent } from '../../../shared/components/custom-input/custom-input.component';
 import {
   lockClosedOutline,
   mailOutline,
-  personAddOutline,
+  bodyOutline,
   personOutline,
   alertCircleOutline,
   imageOutline,
   checkmarkCircleOutline,
 } from 'ionicons/icons';
-import { IonButton, IonAvatar } from '@ionic/angular/standalone';
+import { addIcons } from 'ionicons';
 import { FirebaseService } from 'src/app/services/firebase.service';
 import { User } from 'src/app/models/user.model';
 import { UtilsService } from 'src/app/services/utils.service';
+import { SupabaseService } from 'src/app/services/supabase.service';
 import { Miniature } from 'src/app/models/miniature.model';
 
 @Component({
@@ -36,28 +36,28 @@ import { Miniature } from 'src/app/models/miniature.model';
   templateUrl: './add-update-miniature.component.html',
   styleUrls: ['./add-update-miniature.component.scss'],
   imports: [
+    IonAvatar,
     IonIcon,
-    HeaderComponent,
+    IonButton,
     IonContent,
     CommonModule,
     FormsModule,
+    HeaderComponent,
     CustomInputComponent,
     ReactiveFormsModule,
-    IonButton,
-    IonAvatar,
   ],
 })
 export class AddUpdateMiniatureComponent implements OnInit {
   @Input() miniature: Miniature | null = null;
   firebaseService = inject(FirebaseService);
   utilsService = inject(UtilsService);
-
-  user = {} as User;
+  supabaseService = inject(SupabaseService);
+  user: User = {} as User;
 
   form = new FormGroup({
     id: new FormControl(''),
-    image: new FormControl('', [Validators.required]),
     name: new FormControl('', [Validators.required, Validators.minLength(4)]),
+    image: new FormControl('', [Validators.required]),
     units: new FormControl(1, [Validators.required, Validators.min(1)]),
     strength: new FormControl(0, [Validators.required, Validators.min(0)]),
   });
@@ -66,15 +66,16 @@ export class AddUpdateMiniatureComponent implements OnInit {
     addIcons({
       mailOutline,
       lockClosedOutline,
-      personAddOutline,
-      personOutline,
+      bodyOutline,
       alertCircleOutline,
+      personOutline,
       imageOutline,
       checkmarkCircleOutline,
     });
   }
+
   ngOnInit() {
-    this.user = this.utilsService.getFromLocalStorage('user');
+    this.user = this.utilsService.getLocalStorageUser();
     if (this.miniature) {
       this.form.setValue(this.miniature);
     }
@@ -90,12 +91,10 @@ export class AddUpdateMiniatureComponent implements OnInit {
   }
 
   async submit() {
-    if (this.form.valid) {
-      if (this.miniature) {
-        this.UpdateMiniature();
-      } else {
-        this.createMiniature();
-      }
+    if (this.miniature) {
+      this.updateMiniature();
+    } else {
+      this.createMiniature();
     }
   }
 
@@ -104,9 +103,10 @@ export class AddUpdateMiniatureComponent implements OnInit {
     await loading.present();
 
     const path: string = `users/${this.user.uid}/miniatures`;
+
     const imageDataUrl = this.form.value.image;
     const imagePath = `${this.user.uid}/${Date.now()}`;
-    const imageUrl = await this.firebaseService.uploadImage(
+    const imageUrl = await this.supabaseService.uploadImage(
       imagePath,
       imageDataUrl!
     );
@@ -115,21 +115,21 @@ export class AddUpdateMiniatureComponent implements OnInit {
 
     this.firebaseService
       .addDocument(path, this.form.value)
-      .then(async (res) => {
+      .then((res) => {
         this.utilsService.dismissModal({ success: true });
         this.utilsService.presentToast({
-          message: 'Mininatura añadida exitosamente',
-          duration: 1500,
           color: 'success',
+          duration: 1500,
+          message: 'Miniatura añadida exitosamente',
           position: 'middle',
           icon: 'checkmark-circle-outline',
         });
       })
       .catch((error) => {
         this.utilsService.presentToast({
-          message: error.message,
-          duration: 2500,
           color: 'danger',
+          duration: 2500,
+          message: error.message,
           position: 'middle',
           icon: 'alert-circle-outline',
         });
@@ -139,22 +139,19 @@ export class AddUpdateMiniatureComponent implements OnInit {
       });
   }
 
-  async UpdateMiniature() {
+  async updateMiniature() {
     const loading = await this.utilsService.loading();
     await loading.present();
 
     const path: string = `users/${this.user.uid}/miniatures/${
       this.miniature!.id
     }`;
+
     if (this.form.value.image != this.miniature!.image) {
       const imageDataUrl = this.form.value.image;
-      const oldImagePath = await this.firebaseService.getFilePath(
-        this.miniature!.image
-      );
-      await this.firebaseService.deleteFile(oldImagePath);
-      const imagePath = `${this.user.uid}/${Date.now()}`;
-      const imageUrl = await this.firebaseService.uploadImage(
-        imagePath,
+      const imagePath = this.supabaseService.getFilePath(this.miniature!.image);
+      const imageUrl = await this.supabaseService.uploadImage(
+        imagePath!,
         imageDataUrl!
       );
       this.form.controls.image.setValue(imageUrl);
@@ -163,21 +160,21 @@ export class AddUpdateMiniatureComponent implements OnInit {
 
     this.firebaseService
       .updateDocument(path, this.form.value)
-      .then(async (res) => {
+      .then((res) => {
         this.utilsService.dismissModal({ success: true });
         this.utilsService.presentToast({
-          message: 'Mininatura editada exitosamente',
-          duration: 1500,
           color: 'success',
+          duration: 1500,
+          message: 'Miniatura editada exitosamente',
           position: 'middle',
           icon: 'checkmark-circle-outline',
         });
       })
       .catch((error) => {
         this.utilsService.presentToast({
-          message: error.message,
-          duration: 2500,
           color: 'danger',
+          duration: 2500,
+          message: error.message,
           position: 'middle',
           icon: 'alert-circle-outline',
         });

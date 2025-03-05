@@ -14,6 +14,7 @@ export class SupabaseService {
       environment.supabaseConfig.apiKey
     );
   }
+
   async uploadImage(path: string, imageUrl: string) {
     const blob = this.dataUrlToBlob(imageUrl!);
     const file = new File([blob], path.split('/')[1] + `.png`, {
