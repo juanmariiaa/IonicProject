@@ -1,5 +1,5 @@
 {
-  "name": "warmace-manager",
+  "name": "inventario-manager",
   "integrations": {
     "capacitor": {}
   },
