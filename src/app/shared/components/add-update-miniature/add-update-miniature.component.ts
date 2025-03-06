@@ -13,8 +13,8 @@ import {
   IonIcon,
   IonAvatar,
 } from '@ionic/angular/standalone';
-import { HeaderComponent } from '../../../shared/components/header/header.component';
-import { CustomInputComponent } from '../../../shared/components/custom-input/custom-input.component';
+import { HeaderComponent } from '../header/header.component';
+import { CustomInputComponent } from '../custom-input/custom-input.component';
 import {
   lockClosedOutline,
   mailOutline,
