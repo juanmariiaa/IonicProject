@@ -1,6 +1,6 @@
-# WarMace Manager
+# Gestor de Inventario
 
-WarMace Manager es una aplicación desarrollada con [Angular](https://angular.io/) e [Ionic](https://ionicframework.com/) que permite gestionar una colección de miniaturas del universo WarMace.
+Gestor de Inventario es una aplicación desarrollada con [Angular](https://angular.io/) e [Ionic](https://ionicframework.com/) que permite gestionar una colección de miniaturas del universo WarMace.
 
 ## Requisitos previos
 

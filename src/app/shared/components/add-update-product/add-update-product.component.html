@@ -1,5 +1,5 @@
 <app-header
-  [title]="miniature ? 'Editar miniatura' : 'Añadir miniatura'"
+  [title]="product ? 'Editar producto' : 'Añadir producto'"
   [isModal]="true"
 ></app-header>
 <ion-content>
@@ -37,38 +37,38 @@
       </div>
 
       <app-custom-input
-        [control]="form.controls.units"
+        [control]="form.controls.stock"
         type="number"
-        label="Unidades"
+        label="Stock"
       ></app-custom-input>
 
       <div
         class="validators"
-        *ngIf="form.controls.units.errors && form.controls.units.touched"
+        *ngIf="form.controls.stock.errors && form.controls.stock.touched"
       >
-        <div *ngIf="form.controls.units.errors?.['required']">
-          Debe especificar una cantidad de miniaturas
+        <div *ngIf="form.controls.stock.errors?.['required']">
+          Debe especificar una cantidad de stock
         </div>
-        <div *ngIf="form.controls.units.errors?.['min']">
+        <div *ngIf="form.controls.stock.errors?.['min']">
           La cantidad debe ser mayor de uno
         </div>
       </div>
 
       <app-custom-input
-        [control]="form.controls.strength"
+        [control]="form.controls.price"
         type="number"
-        label="Fuerza"
+        label="Precio"
       ></app-custom-input>
 
       <div
         class="validators"
-        *ngIf="form.controls.strength.errors && form.controls.strength.touched"
+        *ngIf="form.controls.price.errors && form.controls.price.touched"
       >
-        <div *ngIf="form.controls.strength.errors?.['required']">
-          Debe especificar una cantidad de fuerza
+        <div *ngIf="form.controls.price.errors?.['required']">
+          Debe especificar un precio
         </div>
-        <div *ngIf="form.controls.strength.errors?.['min']">
-          La fuerza debe ser mayor de cero.
+        <div *ngIf="form.controls.price.errors?.['min']">
+          El precio debe ser mayor de cero.
         </div>
       </div>
 
@@ -80,8 +80,8 @@
         type="submit"
         [disabled]="form.invalid"
       >
-        {{ miniature ? "Editar miniatura" : "Añadir miniatura" }}
-        <ion-icon slot="end" name="body-outline"></ion-icon>
+        {{ product ? "Editar producto" : "Añadir producto" }}
+        <ion-icon slot="end" name="cube-outline"></ion-icon>
       </ion-button>
     </form>
   </div>

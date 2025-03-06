@@ -1,6 +1,6 @@
 {
-  "name": "WarMace Manager",
-  "short_name": "WarMace Manager",
+  "name": "Gestor de Inventario",
+  "short_name": "Gestor de Inventario",
   "theme_color": "#1976d2",
   "background_color": "#fafafa",
   "display": "standalone",

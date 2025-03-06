@@ -29,12 +29,12 @@ import { FirebaseService } from 'src/app/services/firebase.service';
 import { User } from 'src/app/models/user.model';
 import { UtilsService } from 'src/app/services/utils.service';
 import { SupabaseService } from 'src/app/services/supabase.service';
-import { Miniature } from 'src/app/models/miniature.model';
+import { Product } from 'src/app/models/product.model';
 
 @Component({
-  selector: 'app-add-update-miniature',
-  templateUrl: './add-update-miniature.component.html',
-  styleUrls: ['./add-update-miniature.component.scss'],
+  selector: 'app-add-update-product',
+  templateUrl: './add-update-product.component.html',
+  styleUrls: ['./add-update-product.component.scss'],
   imports: [
     IonAvatar,
     IonIcon,
@@ -47,8 +47,8 @@ import { Miniature } from 'src/app/models/miniature.model';
     ReactiveFormsModule,
   ],
 })
-export class AddUpdateMiniatureComponent implements OnInit {
-  @Input() miniature: Miniature | null = null;
+export class AddUpdateProductComponent implements OnInit {
+  @Input() product: Product | null = null;
   firebaseService = inject(FirebaseService);
   utilsService = inject(UtilsService);
   supabaseService = inject(SupabaseService);
@@ -58,8 +58,8 @@ export class AddUpdateMiniatureComponent implements OnInit {
     id: new FormControl(''),
     name: new FormControl('', [Validators.required, Validators.minLength(4)]),
     image: new FormControl('', [Validators.required]),
-    units: new FormControl(1, [Validators.required, Validators.min(1)]),
-    strength: new FormControl(0, [Validators.required, Validators.min(0)]),
+    stock: new FormControl(1, [Validators.required, Validators.min(1)]),
+    price: new FormControl(0, [Validators.required, Validators.min(0)]),
   });
 
   constructor() {
@@ -76,14 +76,14 @@ export class AddUpdateMiniatureComponent implements OnInit {
 
   ngOnInit() {
     this.user = this.utilsService.getLocalStorageUser();
-    if (this.miniature) {
-      this.form.setValue(this.miniature);
+    if (this.product) {
+      this.form.setValue(this.product);
     }
   }
 
   async takeImage() {
     const dataUrl = (
-      await this.utilsService.takePicture('Imagen de la miniatura')
+      await this.utilsService.takePicture('Imagen del producto')
     ).dataUrl;
     if (dataUrl) {
       this.form.controls.image.setValue(dataUrl);
@@ -91,18 +91,18 @@ export class AddUpdateMiniatureComponent implements OnInit {
   }
 
   async submit() {
-    if (this.miniature) {
-      this.updateMiniature();
+    if (this.product) {
+      this.updateProduct();
     } else {
-      this.createMiniature();
+      this.createProduct();
     }
   }
 
-  async createMiniature() {
+  async createProduct() {
     const loading = await this.utilsService.loading();
     await loading.present();
 
-    const path: string = `users/${this.user.uid}/miniatures`;
+    const path: string = `users/${this.user.uid}/products`;
 
     const imageDataUrl = this.form.value.image;
     const imagePath = `${this.user.uid}/${Date.now()}`;
@@ -120,7 +120,7 @@ export class AddUpdateMiniatureComponent implements OnInit {
         this.utilsService.presentToast({
           color: 'success',
           duration: 1500,
-          message: 'Miniatura añadida exitosamente',
+          message: 'Producto añadido exitosamente',
           position: 'middle',
           icon: 'checkmark-circle-outline',
         });
@@ -139,17 +139,17 @@ export class AddUpdateMiniatureComponent implements OnInit {
       });
   }
 
-  async updateMiniature() {
+  async updateProduct() {
     const loading = await this.utilsService.loading();
     await loading.present();
 
-    const path: string = `users/${this.user.uid}/miniatures/${
-      this.miniature!.id
+    const path: string = `users/${this.user.uid}/products/${
+      this.product!.id
     }`;
 
-    if (this.form.value.image != this.miniature!.image) {
+    if (this.form.value.image != this.product!.image) {
       const imageDataUrl = this.form.value.image;
-      const imagePath = this.supabaseService.getFilePath(this.miniature!.image);
+      const imagePath = this.supabaseService.getFilePath(this.product!.image);
       const imageUrl = await this.supabaseService.uploadImage(
         imagePath!,
         imageDataUrl!
@@ -165,7 +165,7 @@ export class AddUpdateMiniatureComponent implements OnInit {
         this.utilsService.presentToast({
           color: 'success',
           duration: 1500,
-          message: 'Miniatura editada exitosamente',
+          message: 'Producto editado exitosamente',
           position: 'middle',
           icon: 'checkmark-circle-outline',
         });

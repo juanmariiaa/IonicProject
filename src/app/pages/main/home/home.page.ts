@@ -24,9 +24,9 @@ import { UtilsService } from 'src/app/services/utils.service';
 import { FirebaseService } from 'src/app/services/firebase.service';
 import { HeaderComponent } from '../../../shared/components/header/header.component';
 import { addIcons } from 'ionicons';
-import { add, createOutline, trashOutline, bodyOutline } from 'ionicons/icons';
-import { AddUpdateMiniatureComponent } from 'src/app/shared/components/add-update-miniature/add-update-miniature.component';
-import { Miniature } from 'src/app/models/miniature.model';
+import { add, createOutline, trashOutline, cubeOutline } from 'ionicons/icons';
+import { AddUpdateProductComponent } from 'src/app/shared/components/add-update-product/add-update-product.component';
+import { Product } from 'src/app/models/product.model';
 import { User } from 'src/app/models/user.model';
 import { SupabaseService } from 'src/app/services/supabase.service';
 import { QueryOptions } from '../../../services/query-options.interface';
@@ -63,26 +63,20 @@ export class HomePage implements OnInit {
   utilsService = inject(UtilsService);
   firebaseService = inject(FirebaseService);
   supabaseService = inject(SupabaseService);
-  miniatures: Miniature[] = [];
+  products: Product[] = [];
   loading: boolean = false;
   constructor() {
-    addIcons({ createOutline, trashOutline, bodyOutline, add });
+    addIcons({ createOutline, trashOutline, cubeOutline, add });
   }
 
   ngOnInit() {}
 
-  // signOut() {
-  //   this.firebaseService.signOut().then(() => {
-  //     this.utilsService.routerLink('/auth');
-  //   });
-  // }
-
-  async getMiniatures() {
+  async getProducts() {
     this.loading = true;
     const user = this.utilsService.getLocalStorageUser();
-    const path: string = `users/${user.uid}/miniatures`;
+    const path: string = `users/${user.uid}/products`;
     const queryOptions: QueryOptions = {
-      orderBy: { field: 'strength', direction: 'desc' },
+      orderBy: { field: 'price', direction: 'desc' },
     };
 
     let timer: any;
@@ -102,32 +96,32 @@ export class HomePage implements OnInit {
       next: (res: any) => {
         console.log('Recibido cambio');
         console.log(res);
-        this.miniatures = res;
+        this.products = res;
         this.loading = false;
         resetTimer();
       },
     });
   }
 
-  async addUpdateMiniature(miniature?: Miniature) {
+  async addUpdateProduct(product?: Product) {
     let success = await this.utilsService.presentModal({
-      component: AddUpdateMiniatureComponent,
+      component: AddUpdateProductComponent,
       cssClass: 'add-update-modal',
-      componentProps: { miniature },
+      componentProps: { product },
     });
     if (success) {
-      this.getMiniatures();
+      this.getProducts();
     }
   }
 
   ionViewWillEnter() {
-    this.getMiniatures();
+    this.getProducts();
   }
 
-  confirmDeleteMiniature(miniature: Miniature) {
+  confirmDeleteProduct(product: Product) {
     this.utilsService.presentAlert({
-      header: 'Eliminar miniatura',
-      message: '¿Está seguro de que desea eliminar la miniatura?',
+      header: 'Eliminar producto',
+      message: '¿Está seguro de que desea eliminar el producto?',
       buttons: [
         {
           text: 'No',
@@ -135,34 +129,34 @@ export class HomePage implements OnInit {
         {
           text: 'Sí',
           handler: () => {
-            this.deleteMiniature(miniature);
+            this.deleteProduct(product);
           },
         },
       ],
     });
   }
 
-  async deleteMiniature(miniature: Miniature) {
+  async deleteProduct(product: Product) {
     const loading = await this.utilsService.loading();
     await loading.present();
 
     const user: User = this.utilsService.getLocalStorageUser();
 
-    const path: string = `users/${user.uid}/miniatures/${miniature.id}`;
+    const path: string = `users/${user.uid}/products/${product.id}`;
 
-    const imagePath = this.supabaseService.getFilePath(miniature.image);
+    const imagePath = this.supabaseService.getFilePath(product.image);
     await this.supabaseService.deleteFile(imagePath!);
 
     this.firebaseService
       .deleteDocument(path)
       .then((res) => {
-        this.miniatures = this.miniatures.filter(
-          (listedMiniature) => listedMiniature.id !== miniature.id
+        this.products = this.products.filter(
+          (listedProduct) => listedProduct.id !== product.id
         );
         this.utilsService.presentToast({
           color: 'success',
           duration: 1500,
-          message: 'Miniatura borrada exitosamente',
+          message: 'Producto borrado exitosamente',
           position: 'middle',
           icon: 'checkmark-circle-outline',
         });
@@ -180,15 +174,17 @@ export class HomePage implements OnInit {
         loading.dismiss();
       });
   }
+
   doRefresh(event: any) {
     setTimeout(() => {
-      this.getMiniatures();
+      this.getProducts();
       event.target.complete();
     }, 2000);
   }
-  getTotalPower() {
-    return this.miniatures.reduce(
-      (total, miniature) => total + miniature.strength * miniature.units,
+
+  getTotalValue() {
+    return this.products.reduce(
+      (total, product) => total + product.price * product.stock,
       0
     );
   }
