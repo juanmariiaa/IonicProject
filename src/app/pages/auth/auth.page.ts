@@ -7,20 +7,19 @@ import {
   ReactiveFormsModule,
   Validators,
 } from '@angular/forms';
-import { IonContent, IonIcon } from '@ionic/angular/standalone';
-import { HeaderComponent } from 'src/app/shared/components/header/header.component';
-import { CustomInputComponent } from 'src/app/shared/components/custom-input/custom-input.component';
-import { addIcons } from 'ionicons';
+import { IonContent, IonButton, IonIcon } from '@ionic/angular/standalone';
+import { HeaderComponent } from '../../shared/components/header/header.component';
+import { CustomInputComponent } from '../../shared/components/custom-input/custom-input.component';
 import {
+  personCircle,
   lockClosedOutline,
   mailOutline,
-  personAddOutline,
   logInOutline,
+  personAddOutline,
   alertCircleOutline,
-  personCircleOutline,
 } from 'ionicons/icons';
-import { IonButton } from '@ionic/angular/standalone';
-import { LogoComponent } from 'src/app/shared/components/logo/logo.component';
+import { addIcons } from 'ionicons';
+import { LogoComponent } from '../../shared/components/logo/logo.component';
 import { RouterLink } from '@angular/router';
 import { FirebaseService } from 'src/app/services/firebase.service';
 import { User } from 'src/app/models/user.model';
@@ -32,35 +31,35 @@ import { UtilsService } from 'src/app/services/utils.service';
   styleUrls: ['./auth.page.scss'],
   standalone: true,
   imports: [
+    RouterLink,
     IonIcon,
-    HeaderComponent,
+    IonButton,
     IonContent,
     CommonModule,
     FormsModule,
+    HeaderComponent,
     CustomInputComponent,
     ReactiveFormsModule,
-    IonButton,
     LogoComponent,
-    RouterLink,
   ],
 })
 export class AuthPage implements OnInit {
+  firebaseService = inject(FirebaseService);
+  utilsService = inject(UtilsService);
+
   form = new FormGroup({
     email: new FormControl('', [Validators.required, Validators.email]),
     password: new FormControl('', [Validators.required]),
   });
 
-  firebaseService = inject(FirebaseService);
-  utilsService = inject(UtilsService);
-
   constructor() {
     addIcons({
+      personCircle,
       mailOutline,
       lockClosedOutline,
-      personAddOutline,
       logInOutline,
+      personAddOutline,
       alertCircleOutline,
-      personCircleOutline,
     });
   }
 
@@ -76,9 +75,9 @@ export class AuthPage implements OnInit {
       })
       .catch((error) => {
         this.utilsService.presentToast({
-          message: error.message,
-          duration: 2500,
           color: 'danger',
+          duration: 2500,
+          message: error.message,
           position: 'middle',
           icon: 'alert-circle-outline',
         });
@@ -89,37 +88,39 @@ export class AuthPage implements OnInit {
   }
 
   async getUserInfo(uid: string) {
-    const loading = await this.utilsService.loading();
-    await loading.present();
+    if (this.form.valid) {
+      const loading = await this.utilsService.loading();
+      await loading.present();
 
-    let path = `users/${uid}`;
+      let path: string = `users/${uid}`;
 
-    this.firebaseService
-      .getDocument(path)
-      .then((userData: any) => {
-        const user: User = userData;
-        this.utilsService.saveInLocalStorage('user', user);
-        this.utilsService.presentToast({
-          message: `Sesión iniciada como ${user.name}`,
-          duration: 1500,
-          color: 'success',
-          position: 'middle',
-          icon: 'person-circle-outline',
+      this.firebaseService
+        .getDocument(path)
+        .then((userData: any) => {
+          const user: User = userData;
+          this.utilsService.saveInLocalStorage('user', user);
+          this.utilsService.presentToast({
+            color: 'success',
+            duration: 1500,
+            message: `Sesión iniciada como ${user.name}`,
+            position: 'middle',
+            icon: 'person-circle-outline',
+          });
+          this.form.reset();
+          this.utilsService.routerLink('/main/home');
+        })
+        .catch((error) => {
+          this.utilsService.presentToast({
+            color: 'danger',
+            duration: 2500,
+            message: error.message,
+            position: 'middle',
+            icon: 'alert-circle-outline',
+          });
+        })
+        .finally(() => {
+          loading.dismiss();
         });
-        this.form.reset();
-        this.utilsService.routerLink('/main/home');
-      })
-      .catch((error) => {
-        this.utilsService.presentToast({
-          message: error.message,
-          duration: 2500,
-          color: 'danger',
-          position: 'middle',
-          icon: 'alert-circle-outline',
-        });
-      })
-      .finally(() => {
-        loading.dismiss();
-      });
+    }
   }
 }

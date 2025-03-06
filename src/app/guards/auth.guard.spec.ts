@@ -1,17 +1,19 @@
-import { TestBed } from '@angular/core/testing';
+import { inject } from '@angular/core';
 import { CanActivateFn } from '@angular/router';
+import { FirebaseService } from '../services/firebase.service';
+import { UtilsService } from '../services/utils.service';
 
-import { authGuard } from './auth.guard';
+export const authGuard: CanActivateFn = async (route, state) => {
+  const firebaseService = inject(FirebaseService);
+  const utilsService = inject(UtilsService);
 
-describe('authGuard', () => {
-  const executeGuard: CanActivateFn = (...guardParameters) => 
-      TestBed.runInInjectionContext(() => authGuard(...guardParameters));
+  const isAuthenticated = await firebaseService.isAuthenticated();
+  const localStorageUser = localStorage.getItem('user');
 
-  beforeEach(() => {
-    TestBed.configureTestingModule({});
-  });
-
-  it('should be created', () => {
-    expect(executeGuard).toBeTruthy();
-  });
-});
+  if (isAuthenticated && localStorageUser) {
+    return true;
+  } else {
+    firebaseService.signOut();
+    return utilsService.urlTree('/auth');
+  }
+};

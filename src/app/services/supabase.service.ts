@@ -15,22 +15,36 @@ export class SupabaseService {
     );
   }
 
-  async uploadImage(path: string, imageUrl: string) {
-    const blob = this.dataUrlToBlob(imageUrl!);
-    const file = new File([blob], path.split('/')[1] + `.png`, {
-      type: 'image/png',
-    });
+  async uploadImage(path: string, imageUrl: string): Promise<string> {
+    try {
+      console.log('Iniciando subida de imagen...');
+      const blob = this.dataUrlToBlob(imageUrl!);
+      console.log('Blob creado:', blob);
+      const file = new File([blob], path.split('/')[1] + `.png`, {
+        type: 'image/png',
+      });
+      console.log('Archivo creado:', file);
 
-    const uploadResult = await this.supabase.storage
-      .from(environment.supabaseConfig.bucket)
-      .upload(path, file, { upsert: true });
-    if (uploadResult.error) {
-      throw uploadResult.error;
+      console.log('Subiendo imagen a Supabase...');
+      const uploadResult = await this.supabase.storage
+        .from(environment.supabaseConfig.bucket)
+        .upload(path, file, { upsert: true });
+
+      if (uploadResult.error) {
+        console.error('Error al subir la imagen:', uploadResult.error.message);
+        throw uploadResult.error;
+      }
+
+      const urlInfo = await this.supabase.storage
+        .from(environment.supabaseConfig.bucket)
+        .getPublicUrl(path);
+
+      console.log('Imagen subida exitosamente. URL:', urlInfo.data.publicUrl);
+      return urlInfo.data.publicUrl;
+    } catch (error) {
+      console.error('Error en uploadImage:', error);
+      throw error;
     }
-    const urlInfo = await this.supabase.storage
-      .from(environment.supabaseConfig.bucket)
-      .getPublicUrl(path);
-    return urlInfo.data.publicUrl;
   }
 
   // Convertir dataUrl a Blob
@@ -48,6 +62,7 @@ export class SupabaseService {
     return new Blob([u8arr], { type: mime });
   }
 
+  // Obtener el path del archivo desde una URL pública
   getFilePath(publicUrl: string): string | null {
     try {
       const url = new URL(publicUrl);
@@ -72,16 +87,20 @@ export class SupabaseService {
       return null;
     }
   }
+
+  // Eliminar un archivo del bucket de Supabase
   async deleteFile(filePath: string): Promise<boolean> {
     try {
       const { error } = await this.supabase.storage
         .from(environment.supabaseConfig.bucket)
         .remove([filePath]);
       if (error) {
+        console.error('Error al eliminar el archivo:', error.message);
         return false;
       }
       return true;
     } catch (error) {
+      console.error('Error en deleteFile:', error);
       return false;
     }
   }

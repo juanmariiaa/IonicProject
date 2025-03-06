@@ -45,19 +45,22 @@ export class SensorService {
   async startListeningToMotion() {
     this.accelerationHandler = await Motion.addListener('accel', (event) => {
       this.accelerometerDataSubject.next({
-          x: event.acceleration.x,
-          y: event.acceleration.y,
-          z: event.acceleration.z
+        x: event.acceleration.x,
+        y: event.acceleration.y,
+        z: event.acceleration.z,
       });
     });
 
-    this.orientationHandler = await Motion.addListener('orientation', (event) => {
-      this.orientationDataSubject.next({
+    this.orientationHandler = await Motion.addListener(
+      'orientation',
+      (event) => {
+        this.orientationDataSubject.next({
           alpha: event.alpha,
           beta: event.beta,
-          gamma: event.gamma
-      });
-    });
+          gamma: event.gamma,
+        });
+      }
+    );
   }
 
   async stopWatchingGPS() {
